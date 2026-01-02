@@ -1,5 +1,6 @@
 #include "nstackLayout.hpp"
 #include <hyprland/src/Compositor.hpp>
+#include <hyprland/src/debug/log/Logger.hpp>
 #include <hyprland/src/desktop/DesktopTypes.hpp>
 #include <hyprland/src/helpers/MiscFunctions.hpp>
 #include <hyprland/src/render/decorations/CHyprGroupBarDecoration.hpp>
@@ -81,7 +82,7 @@ static void applyWorkspaceLayoutOptions(SNstackWorkspaceData* wsData) {
         try {
             std::string stackstr = wslayoutopts.at("nstack-stacks");
             wsstacks             = std::stol(stackstr);
-        } catch (std::exception& e) { Debug::log(ERR, "Nstack layoutopt invalid rule value for nstack-stacks: {}", e.what()); }
+        } catch (std::exception& e) { Log::logger->log(Log::ERR, "Nstack layoutopt invalid rule value for nstack-stacks: {}", e.what()); }
     }
     if (wsstacks) {
         wsData->m_iStackCount = wsstacks;
@@ -93,7 +94,7 @@ static void applyWorkspaceLayoutOptions(SNstackWorkspaceData* wsData) {
         std::string mfactstr = wslayoutopts.at("nstack-mfact");
         try {
             wsmfact = std::stof(mfactstr);
-        } catch (std::exception& e) { Debug::log(ERR, "Nstack layoutopt nstack-mfact format error: {}", e.what()); }
+        } catch (std::exception& e) { Log::logger->log(Log::ERR, "Nstack layoutopt nstack-mfact format error: {}", e.what()); }
     }
     wsData->master_factor = wsmfact;
 
@@ -104,7 +105,7 @@ static void applyWorkspaceLayoutOptions(SNstackWorkspaceData* wsData) {
         std::string smfactstr = wslayoutopts.at("nstack-single_mfact");
         try {
             wssmfact = std::stof(smfactstr);
-        } catch (std::exception& e) { Debug::log(ERR, "Nstack layoutopt nstack-single_mfact format error: {}", e.what()); }
+        } catch (std::exception& e) { Log::logger->log(Log::ERR, "Nstack layoutopt nstack-single_mfact format error: {}", e.what()); }
     }
     wsData->single_master_factor = wssmfact;
 
@@ -114,7 +115,7 @@ static void applyWorkspaceLayoutOptions(SNstackWorkspaceData* wsData) {
         std::string ssfactstr = wslayoutopts.at("nstack-special_scale_factor");
         try {
             wsssfact = std::stof(ssfactstr);
-        } catch (std::exception& e) { Debug::log(ERR, "Nstack layoutopt nstack-special_scale_factor format error: {}", e.what()); }
+        } catch (std::exception& e) { Log::logger->log(Log::ERR, "Nstack layoutopt nstack-special_scale_factor format error: {}", e.what()); }
     }
     wsData->special_scale_factor = wsssfact;
 
@@ -610,7 +611,7 @@ void CHyprNstackLayout::applyNodeDataToWindow(SNstackNodeData* pNode) {
     }
 
     if (!PMONITOR) {
-        Debug::log(ERR, "Orphaned Node {} (workspace ID: {})!!", static_cast<void*>(pNode), pNode->workspaceID);
+        Log::logger->log(Log::ERR, "Orphaned Node {} (workspace ID: {})!!", static_cast<void*>(pNode), pNode->workspaceID);
         return;
     }
 
@@ -641,7 +642,7 @@ void CHyprNstackLayout::applyNodeDataToWindow(SNstackNodeData* pNode) {
     auto               gapsOut = WORKSPACERULE.gapsOut.value_or(*PGAPSOUT);
 
     if (!validMapped(PWINDOW)) {
-        Debug::log(ERR, "Node {} holding invalid window {}!!", pNode, PWINDOW);
+        Log::logger->log(Log::ERR, "Node {} holding invalid window {}!!", pNode, PWINDOW);
         return;
     }
 
@@ -901,7 +902,7 @@ SWindowRenderLayoutHints CHyprNstackLayout::requestRenderHints(PHLWINDOW pWindow
 void CHyprNstackLayout::switchWindows(PHLWINDOW pWindow, PHLWINDOW pWindow2) {
     // windows should be valid, insallah
 
-    Debug::log(LOG, "SWITCH WINDOWS {} <-> {}", pWindow, pWindow2);
+    Log::logger->log(Log::INFO, "SWITCH WINDOWS {} <-> {}", pWindow, pWindow2);
 
     const auto PNODE  = getNodeFromWindow(pWindow);
     const auto PNODE2 = getNodeFromWindow(pWindow2);
@@ -991,7 +992,7 @@ std::any CHyprNstackLayout::layoutMessage(SLayoutMessageHeader header, std::stri
     CVarList vars(message, 0, ' ');
 
     if (vars.size() < 1 || vars[0].empty()) {
-        Debug::log(ERR, "layoutmsg called without params");
+        Log::logger->log(Log::ERR, "layoutmsg called without params");
         return 0;
     }
 
