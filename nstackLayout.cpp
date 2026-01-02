@@ -2,6 +2,7 @@
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/debug/log/Logger.hpp>
 #include <hyprland/src/desktop/DesktopTypes.hpp>
+#include <hyprland/src/desktop/state/FocusState.hpp>
 #include <hyprland/src/helpers/MiscFunctions.hpp>
 #include <hyprland/src/render/decorations/CHyprGroupBarDecoration.hpp>
 #include <format>
@@ -976,12 +977,12 @@ std::any CHyprNstackLayout::layoutMessage(SLayoutMessageHeader header, std::stri
             const auto FSMODE        = header.pWindow->m_fullscreenState.internal;
             const auto WORKSPACEDATA = getMasterWorkspaceData(PWORKSPACE->m_id);
             g_pCompositor->setWindowFullscreenInternal(header.pWindow, FSMODE_NONE);
-            g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
+            Desktop::focusState()->fullWindowFocus(PWINDOWTOCHANGETO);
             if (WORKSPACEDATA->inherit_fullscreen)
                 g_pCompositor->setWindowFullscreenInternal(PWINDOWTOCHANGETO, FSMODE);
 
         } else {
-            g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
+            Desktop::focusState()->fullWindowFocus(PWINDOWTOCHANGETO);
             g_pCompositor->warpCursorTo(PWINDOWTOCHANGETO->middle());
         }
         g_pInputManager->m_forcedFocus = PWINDOWTOCHANGETO;
@@ -1099,7 +1100,7 @@ std::any CHyprNstackLayout::layoutMessage(SLayoutMessageHeader header, std::stri
 
         if (PWINDOWTOSWAPWITH) {
             switchWindows(header.pWindow, PWINDOWTOSWAPWITH);
-            g_pCompositor->focusWindow(header.pWindow);
+            Desktop::focusState()->fullWindowFocus(header.pWindow);
         }
     } else if (command == "swapprev") {
         if (!validMapped(header.pWindow))
@@ -1114,7 +1115,7 @@ std::any CHyprNstackLayout::layoutMessage(SLayoutMessageHeader header, std::stri
 
         if (PWINDOWTOSWAPWITH) {
             switchWindows(header.pWindow, PWINDOWTOSWAPWITH);
-            g_pCompositor->focusWindow(header.pWindow);
+            Desktop::focusState()->fullWindowFocus(header.pWindow);
         }
     } else if (command == "addmaster") {
         if (!validMapped(header.pWindow))
@@ -1304,15 +1305,15 @@ void CHyprNstackLayout::moveWindowTo(PHLWINDOW pWindow, const std::string& dir, 
         pWindow->moveToWorkspace(PWINDOW2->m_workspace);
         pWindow->m_monitor = PWINDOW2->m_monitor;
         if (!silent) {
-            const auto pMonitor = pWindow->m_monitor.lock();
-            g_pCompositor->setActiveMonitor(pMonitor);
+            const auto pMonitor = Desktop::focusState()->monitor();
+            Desktop::focusState()->rawMonitorFocus(pMonitor);
         }
         onWindowCreatedTiling(pWindow);
     } else {
         // if same monitor, switch windows
         switchWindows(pWindow, PWINDOW2);
         if (silent)
-            g_pCompositor->focusWindow(PWINDOW2);
+            Desktop::focusState()->fullWindowFocus(PWINDOW2);
     }
 }
 
