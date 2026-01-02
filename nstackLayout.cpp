@@ -206,8 +206,8 @@ void CHyprNstackLayout::onWindowCreatedTiling(PHLWINDOW pWindow, eDirection dire
     PNODE->workspaceID = pWindow->workspaceID();
     PNODE->pWindow     = pWindow;
 
-    auto       OPENINGON = isWindowTiled(g_pCompositor->m_lastWindow.lock()) && g_pCompositor->m_lastWindow.lock()->m_workspace == pWindow->m_workspace ?
-              getNodeFromWindow(g_pCompositor->m_lastWindow.lock()) :
+    auto       OPENINGON = isWindowTiled(Desktop::focusState()->window()) && Desktop::focusState()->window()->m_workspace == pWindow->m_workspace ?
+              getNodeFromWindow(Desktop::focusState()->window()) :
               getMasterNodeOnWorkspace(pWindow->workspaceID());
 
     const auto MOUSECOORDS = g_pInputManager->getMouseCoordsInternal();
@@ -716,7 +716,7 @@ bool CHyprNstackLayout::isWindowTiled(PHLWINDOW pWindow) {
 }
 
 void CHyprNstackLayout::resizeActiveWindow(const Vector2D& pixResize, eRectCorner corner, PHLWINDOW pWindow) {
-    const auto PWINDOW = pWindow ? pWindow : g_pCompositor->m_lastWindow.lock();
+    const auto PWINDOW = pWindow ? pWindow : Desktop::focusState()->window();
 
     if (!validMapped(PWINDOW))
         return;
