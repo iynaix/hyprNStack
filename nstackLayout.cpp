@@ -655,12 +655,6 @@ void CHyprNstackLayout::applyNodeDataToWindow(SNstackNodeData* pNode) {
 
     if (PWORKSPACEDATA->no_gaps_when_only && !g_pCompositor->isWorkspaceSpecial(PWINDOW->workspaceID()) &&
         (getNodesOnWorkspace(PWINDOW->workspaceID()) == 1 || PWINDOW->isEffectiveInternalFSMode(FSMODE_MAXIMIZED))) {
-
-        PWINDOW->m_windowData.noBorder   = CWindowOverridableVar(WORKSPACERULE.noBorder.value_or(PWORKSPACEDATA->no_gaps_when_only != 2), Desktop::Types::PRIORITY_LAYOUT);
-        PWINDOW->m_windowData.decorate   = CWindowOverridableVar(WORKSPACERULE.decorate.value_or(true), Desktop::Types::PRIORITY_LAYOUT);
-        PWINDOW->m_windowData.noRounding = CWindowOverridableVar(true, Desktop::Types::PRIORITY_LAYOUT);
-        PWINDOW->m_windowData.noShadow   = CWindowOverridableVar(true, Desktop::Types::PRIORITY_LAYOUT);
-
         PWINDOW->updateWindowDecos();
         const auto RESERVED = PWINDOW->getFullWindowReservedArea();
 
