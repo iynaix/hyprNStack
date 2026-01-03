@@ -797,8 +797,23 @@ void CHyprNstackLayout::resizeActiveWindow(const Vector2D& pixResize, eRectCorne
                 PNODE->percSize = std::clamp(PNODE->percSize + pixResize.x / SIZE, 0.05, 1.95);
             } else {
                 const auto SIZE =
-                    (PMONITOR->m_size.x - PMONITOR->m_reservedArea.left() - PMONITOR->m_reservedArea.right() - PMASTERNODE->size.x) / PWORKSPACEDATA->stackNodeCount.size();
-                PWORKSPACEDATA->stackPercs[PNODE->stackNum] = std::clamp(PWORKSPACEDATA->stackPercs[PNODE->stackNum] + pixResize.x / SIZE, 0.05, 1.95);
+                    (PMONITOR->m_size.x - PMONITOR->m_reservedTopLeft.x - PMONITOR->m_reservedBottomRight.x - PMASTERNODE->size.x) / PWORKSPACEDATA->stackNodeCount.size();
+                // Check if this is the rightmost stack (which fills remaining space)
+                // For LEFT/RIGHT orientations, the rightmost stack doesn't have its own percentage
+                // Instead, we need to adjust the adjacent stack to make the rightmost stack appear to resize
+                bool isRightmostStack = false;
+                if (PWORKSPACEDATA->orientation == NSTACK_ORIENTATION_LEFT && PNODE->stackNum == PWORKSPACEDATA->stackNodeCount.size() - 1) {
+                    isRightmostStack = true;
+                } else if (PWORKSPACEDATA->orientation == NSTACK_ORIENTATION_RIGHT && PNODE->stackNum == PWORKSPACEDATA->stackNodeCount.size() - 1) {
+                    isRightmostStack = true;
+                }
+                
+                if (isRightmostStack && PNODE->stackNum > 1) {
+                    // For the rightmost stack, adjust the adjacent stack (to its left) instead
+                    PWORKSPACEDATA->stackPercs[PNODE->stackNum - 1] = std::clamp(PWORKSPACEDATA->stackPercs[PNODE->stackNum - 1] + pixResize.x / SIZE, 0.05, 1.95);
+                } else {
+                    PWORKSPACEDATA->stackPercs[PNODE->stackNum] = std::clamp(PWORKSPACEDATA->stackPercs[PNODE->stackNum] + pixResize.x / SIZE, 0.05, 1.95);
+                }
             }
         }
     }
@@ -815,8 +830,23 @@ void CHyprNstackLayout::resizeActiveWindow(const Vector2D& pixResize, eRectCorne
                 PNODE->percSize = std::clamp(PNODE->percSize + pixResize.y / SIZE, 0.05, 1.95);
             } else {
                 const auto SIZE =
-                    (PMONITOR->m_size.y - PMONITOR->m_reservedArea.top() - PMONITOR->m_reservedArea.bottom() - PMASTERNODE->size.y) / PWORKSPACEDATA->stackNodeCount.size();
-                PWORKSPACEDATA->stackPercs[PNODE->stackNum] = std::clamp(PWORKSPACEDATA->stackPercs[PNODE->stackNum] + pixResize.y / SIZE, 0.05, 1.95);
+                    (PMONITOR->m_size.y - PMONITOR->m_reservedTopLeft.y - PMONITOR->m_reservedBottomRight.y - PMASTERNODE->size.y) / PWORKSPACEDATA->stackNodeCount.size();
+                // Check if this is the bottommost stack (which fills remaining space)
+                // For TOP/BOTTOM orientations, the bottommost stack doesn't have its own percentage
+                // Instead, we need to adjust the adjacent stack to make the bottommost stack appear to resize
+                bool isBottommostStack = false;
+                if (PWORKSPACEDATA->orientation == NSTACK_ORIENTATION_TOP && PNODE->stackNum == PWORKSPACEDATA->stackNodeCount.size() - 1) {
+                    isBottommostStack = true;
+                } else if (PWORKSPACEDATA->orientation == NSTACK_ORIENTATION_BOTTOM && PNODE->stackNum == PWORKSPACEDATA->stackNodeCount.size() - 1) {
+                    isBottommostStack = true;
+                }
+                
+                if (isBottommostStack && PNODE->stackNum > 1) {
+                    // For the bottommost stack, adjust the adjacent stack (above it) instead
+                    PWORKSPACEDATA->stackPercs[PNODE->stackNum - 1] = std::clamp(PWORKSPACEDATA->stackPercs[PNODE->stackNum - 1] + pixResize.y / SIZE, 0.05, 1.95);
+                } else {
+                    PWORKSPACEDATA->stackPercs[PNODE->stackNum] = std::clamp(PWORKSPACEDATA->stackPercs[PNODE->stackNum] + pixResize.y / SIZE, 0.05, 1.95);
+                }
             }
         }
     }
